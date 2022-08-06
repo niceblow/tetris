@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    * {outline: 1px solid #ff0000;}
+
+  .wrapper {
+      max-width: 805px;
+      margin-left: 80px;
+      margin-right: 80px;
+      margin-top: 10px;
+    }
+  .buttonw {
+    max-width: 805px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0px;
+  }
+
+  input{
+    font:sans-serif;
+  }
+
+  .b_start{
+    height: 100px;
+    width: 80px;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 1px solid #858284;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    font-size: 1.5em;
+    background-color: #e85631;
+    border-radius:30px;
+    cursor: pointer;
+    box-shadow: inset 4px 4px 4px rgba(255, 255, 255, 0.6),
+    inset -4px -4px 4px rgba(0, 0, 0, 0.4);
+  }
+
+  .b_start:active {
+    color: gainsboro;
+    background-color: #a0381e;
+    box-shadow: inset -2px -2px 4px rgba(255, 255, 255, 0.4),
+    inset 2px 2px 4px rgba(0, 0, 0, 0.8),
+    1px 1px 1px rgba(0, 0, 0, 0.6);
+    transform: translateY(4px);
+  }
+
+  .b_rotate{
+    height: 100px;
+    width: 300px;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 1px solid #858284;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    font-size: 2em;
+    background-color: #b2b1b5;
+    border-radius:40px;
+    cursor: pointer;
+    box-shadow: inset 4px 4px 4px rgba(255, 255, 255, 0.6),
+    inset -4px -4px 4px rgba(0, 0, 0, 0.4);
+
+  }
+  .b_rotate:active {
+    color: gainsboro;
+    background-color: #848287;
+    box-shadow: inset -2px -2px 4px rgba(255, 255, 255, 0.4),
+    inset 2px 2px 4px rgba(0, 0, 0, 0.8),
+    1px 1px 1px rgba(0, 0, 0, 0.6);
+    transform: translateY(4px);
+  }
+
+  .b_left{
+    height: 100px;
+    width: 200px;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 1px solid #858284;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    font-size: 2em;
+    background-color: #7dbaf2;
+    border-radius:40px;
+    cursor: pointer;
+    box-shadow: inset 4px 4px 4px rgba(255, 255, 255, 0.6),
+    inset -4px -4px 4px rgba(0, 0, 0, 0.4);
+  }
+  .b_left:active {
+    color: gainsboro;
+    background-color: #6492bd;
+    box-shadow: inset -2px -2px 4px rgba(255, 255, 255, 0.4),
+    inset 2px 2px 4px rgba(0, 0, 0, 0.8),
+    1px 1px 1px rgba(0, 0, 0, 0.6);
+    transform: translateY(4px);
+  }
+
+  .b_right{
+    height: 100px;
+    width: 200px;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 1px solid #858284;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    font-size: 2em;
+    background-color: #f27dd5;
+    border-radius:40px;
+    cursor: pointer;
+    box-shadow: inset 4px 4px 4px rgba(255, 255, 255, 0.6),
+    inset -4px -4px 4px rgba(0, 0, 0, 0.4);
+  }
+  .b_right:active {
+    color: gainsboro;
+    background-color: #ad5898;
+    box-shadow: inset -2px -2px 4px rgba(255, 255, 255, 0.4),
+    inset 2px 2px 4px rgba(0, 0, 0, 0.8),
+    1px 1px 1px rgba(0, 0, 0, 0.6);
+    transform: translateY(4px);
+  }
+
+</style>
+</head>
+  <body>
+  <div class="wrapper">
+    <canvas id="can" style="background-color:rgb(239, 239, 242);"></canvas>
+    <div class="buttonw">
+      <input type="button" value="Start" onclick="buKey(13);" class="b_start"/>
+      <input type="button" value="回転" onclick="buKey(32);" class="b_rotate"/>
+      <input type="button" value="左" onclick="buKey(37);" class="b_left"/>
+      <input type="button" value="右" onclick="buKey(39);" class="b_right"/><br />
+    </div>
+    <script>
+
+      //落下スピード
+      let GAME_SPEED = 300;
+
+      //フィールドサイズ（ブロックのマス目で縦横カウント）
+      const FIELD_COL = 10;
+      const FIELD_ROW = 20;
+
+      //ブロック一つのサイズ（ピクセル）
+      const BLOCK_SIZE=80;
+
+      //スクリーンサイズ
+      const SCREEN_W = BLOCK_SIZE * FIELD_COL;
+      const SCREEN_H = BLOCK_SIZE * FIELD_ROW;
+
+      let can=document.getElementById("can");
+      //Canvasをサポートしているブラウザ環境のみ実行
+      if(can.getContext){
+        //スクリーン描画
+        can.width = SCREEN_W;
+        can.height = SCREEN_H;
+        can.style.border = "4px solid #555";
+        let con=can.getContext("2d");
+
+        //初期画面メッセージ
+        let s = "TETRIS";
+        con.font = "70px 'Meiryo UI'";
+        let w = con.measureText(s).width;
+        let x = SCREEN_W/2 - w/2;
+        let y = SCREEN_H/2 - 20;
+        // con.lineWidth = 4;
+        con.strokeText(s,x,y);
+        con.fillStyle="black";
+        con.fillText(s,x,y);
+
+      //テトロミノのサイズ(x,yとも4で同一の為一つ指定)
+      const TETRO_SIZE=4;
+
+      //テトロミノの色指定
+      const TETRO_COLORS = [
+        "#000",     // 0空
+        "#6CF",     // 1水色
+        "#F92",     // 2オレンジ
+        "#66F",     // 3青
+        "#C5C",     // 4紫
+        "#FD2",     // 5黄色
+        "#F44",     // 6赤
+        "#5B5"      // 7緑
+      ]
+
+      //テトロミノのタイプ
+      const TETRO_TYPES=[
+        [],         // 0.空っぽ
+        [           // 1.I型
+        [0,0,0,0],
+        [1,1,1,1],
+        [0,0,0,0],
+        [0,0,0,0]
+        ],
+        [           // 2.L型
+        [0,1,0,0],
+        [0,1,0,0],
+        [0,1,1,0],
+        [0,0,0,0]
+        ],
+        [           // 3.J型
+        [0,0,1,0],
+        [0,0,1,0],
+        [0,1,1,0],
+        [0,0,0,0]
+        ],
+        [           // 4.T型
+        [0,1,0,0],
+        [0,1,1,0],
+        [0,1,0,0],
+        [0,0,0,0]
+        ],
+        [           // 5.O型
+        [0,0,0,0],
+        [0,1,1,0],
+        [0,1,1,0],
+        [0,0,0,0]
+        ],
+        [           // 6.Z型
+        [0,0,0,0],
+        [0,1,1,0],
+        [1,1,0,0],
+        [0,0,0,0]
+        ],
+        [           // 7.S型
+        [0,0,0,0],
+        [1,1,0,0],
+        [0,1,1,0],
+        [0,0,0,0]
+        ]
+      ];
+
+      //テトロミノ本体
+      let tetro;
+
+      //テトロミノの座標
+      const START_X = FIELD_COL/2 - TETRO_SIZE/2;
+      const START_Y = 0;
+      let tetro_x = START_X;
+      let tetro_y = START_Y;
+
+      //テトロミノの形
+      let tetoro_t;
+
+      //ゲームオーバーフラグ
+      let over = false;
+
+      //ゲームスタート
+      let gstart = false;
+
+      //ブロックのタイプをランダムにする処理
+      tetro_t = Math.floor(Math.random()*(TETRO_TYPES.length -1))+1;
+      tetro = TETRO_TYPES[tetro_t];
+
+      //フィールドの中身
+      let field = [];//一旦1次元配列を宣言
+      function init(){
+        //フィールドの初期化
+        for(let y=0; y<FIELD_ROW; y++){
+          field[y] = [];//配列の要素を配列と宣言することで2次元配列
+          for(let x=0; x<FIELD_COL; x++){
+            field[y][x] = 0;
+          }
+        }
+      }
+
+      //ブロック一つを描画
+      function drawBlock(x,y,c){
+        let px = x * BLOCK_SIZE;
+        let py = y * BLOCK_SIZE;
+        con.fillStyle=TETRO_COLORS[c];
+        con.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
+        con.strokeStyle="black";
+        con.strokeRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
+      }
+
+      //全部描画する
+      function drawAll(){
+        con.clearRect(0,0,SCREEN_W, SCREEN_H);
+        for(let y=0; y<FIELD_ROW; y++){
+          for(let x=0; x<FIELD_COL; x++){
+            if(field[y][x]){
+              drawBlock(x, y, field[y][x]);
+            }
+          }
+        }
+
+        for(let y=0; y<TETRO_SIZE; y++){
+          for(let x=0; x<TETRO_SIZE; x++){
+            if(tetro[y][x]){
+              drawBlock(tetro_x + x, tetro_y + y, tetro_t);
+            }
+          }
+        }
+
+        //GAME OVERの描画
+        if(over){
+
+          let s = "GAME OVER";
+          con.font = "70px 'Meiryo UI'";
+          let w = con.measureText(s).width;
+          let x = SCREEN_W/2 - w/2;
+          let y = SCREEN_H/2 - 20;
+          con.lineWidth = 4;
+          con.strokeText(s,x,y);
+          con.fillStyle="white";
+          con.fillText(s,x,y);
+
+          //得点表示
+          let s2 = "得点：" + point + "点";
+          let w2 = con.measureText(s2).width;
+          let x2 = SCREEN_W/2 - w2/2;
+          let y2 = SCREEN_H/2 + 60;
+          con.lineWidth = 4;
+          con.strokeText(s2,x2,y2);
+          con.fillStyle="white";
+          con.fillText(s2,x2,y2);
+        }
+      }
+
+
+      //ブロックの衝突判定
+      function checkMove(mx,my,ntetro){
+        if(ntetro == undefined) ntetro = tetro;
+
+        for(let y=0; y<TETRO_SIZE; y++){
+          for(let x=0; x<TETRO_SIZE; x++){
+            if(ntetro[y][x]){
+              let nx= tetro_x + mx + x;
+              let ny= tetro_y + my + y;
+
+              if(ny < 0 ||
+                nx < 0 ||
+                ny >= FIELD_ROW ||
+                nx >= FIELD_COL ||
+                field[ny][nx]){
+                return false;
+              } 
+            }
+          }
+        }
+        return true;
+      }
+
+      //ブロックの回転
+      function rotate(){
+        let ntetro = [];
+
+        for(let y=0; y<TETRO_SIZE; y++){
+          ntetro[y]=[];
+          for(let x=0; x<TETRO_SIZE; x++){
+            ntetro[y][x] = tetro[TETRO_SIZE-x-1][y];
+          }
+        }
+        return ntetro
+      }
+
+      //ブロックを固定する処理
+      function fixTetro(){
+        for(let y=0; y<TETRO_SIZE; y++){
+          for(let x=0; x<TETRO_SIZE; x++){
+            if(tetro[y][x]){
+              field[tetro_y + y][tetro_x + x] = tetro_t;
+            }
+          }
+        }
+      }
+
+      //ラインが揃ったかチェックして消す
+      function checkLine(){
+        let linec=0;
+        for(let y=0; y<FIELD_ROW; y++){
+          
+          let flag=true;
+
+          for(let x=0; x<FIELD_COL; x++){
+            if( !field[y][x] ){
+              flag=false;
+              break;
+            }
+          }
+          if(flag){
+           linec++;
+           checkPoint(linec);
+
+            for(let ny=y; ny>0; ny--){
+              for(let nx=0; nx<FIELD_COL; nx++){
+                field[ny][nx] = field[ny-1][nx];
+              }
+            }
+          }
+        }
+      }
+
+      //累計ポイント
+      let point = 0;
+      function checkPoint(c){
+        point += c;
+        // console.log(point);
+      }
+
+      //ブロックの落ちる処理
+      function dropTetro(){
+        if(over)return;
+
+        if(checkMove(0,1))tetro_y ++;
+        else{
+          fixTetro();
+          checkLine();
+
+          tetro_t = Math.floor(Math.random()*(TETRO_TYPES.length -1))+1;
+          tetro = TETRO_TYPES[tetro_t];
+          tetro_x = START_X;
+          tetro_y = START_Y;
+
+          if(!checkMove(0,0)){
+            over = true;
+          }
+        }
+        drawAll();
+      }
+
+      //キーボードが押された時の処理
+      document.onkeydown= function(e){
+        if(over)return;
+
+        //onkeydownの値はkeycodeで検索
+        switch(e.keyCode){
+          case 13://Enterでスタート
+            init();
+            drawAll();
+            setInterval(dropTetro, GAME_SPEED);
+            break;
+          case 37://左
+            if(checkMove(-1,0))tetro_x --;
+            break;
+          case 39://右
+            if(checkMove(1,0))tetro_x ++;
+            break;
+          case 40://下
+            if(checkMove(0,1))tetro_y ++;
+            break;
+          case 32://スペース
+            let ntetro = rotate();
+            if(checkMove(0,0,ntetro))tetro = ntetro;
+            break;
+          default://それ以外のキーは何もしない
+            console.log('Sorry. The key is wrong.');
+            return;
+        }
+        drawAll();
+      }
+
+      //テスト
+      function buKey(bk){
+        if(over)return;
+
+        switch(bk){
+          case 13://スタート
+            init();
+            drawAll();
+            setInterval(dropTetro, GAME_SPEED);
+            break;
+          case 37://左
+            if(checkMove(-1,0))tetro_x --;
+            break;
+          case 39://右
+            if(checkMove(1,0))tetro_x ++;
+            break;
+          case 40://下
+            if(checkMove(0,1))tetro_y ++;
+            break;
+          case 32://スペース
+            let ntetro = rotate();
+            if(checkMove(0,0,ntetro))tetro = ntetro;
+            break;
+          default://それ以外のキーは何もしない
+            console.log('Sorry. The key is wrong.');
+            return;
+        }
+        drawAll();
+      }
+      }
+
+    </script>
+  </div>
+  </body>
+</html>
